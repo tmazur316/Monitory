@@ -87,6 +87,7 @@ class producer_handler: Monitor
   private:
     bool stop;
     Condition to_stop;
+    int count;
 
     void change_stop()
     {
@@ -98,9 +99,9 @@ class producer_handler: Monitor
   public:
     producer_handler(): Monitor()
     {
-      stop=false;
+      stop = false;
+      count = 0;
     }
-
 
     void producer_stop()
     {
@@ -116,6 +117,43 @@ class producer_handler: Monitor
       enter();
       change_stop();
       signal(to_stop);
+      leave();
+    }
+};
+
+class elements: Monitor
+{
+  private:
+    int count;
+    Condition stop;
+
+  public:
+    elements(): Monitor()
+    {
+      count=0;
+    }
+
+    void plus_count()
+    {
+      enter();
+      count++;
+      leave();
+    }
+
+    void minus_count()
+    {
+      enter();
+      count--;
+      if(count == 49)
+        signal(stop);
+      leave();
+    }
+
+    void stop_producer()
+    {
+      enter();
+      if(count == 50)
+        wait(stop);
       leave();
     }
 };
